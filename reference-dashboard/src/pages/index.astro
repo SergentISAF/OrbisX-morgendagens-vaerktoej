@@ -78,6 +78,40 @@ import ReportForm from "../components/ReportForm";
         </p>
         <ReportForm client:load />
       </section>
+
+      <section class="mt-24">
+        <p class="mb-4 text-sm uppercase tracking-widest text-[rgb(var(--muted))]">
+          Embed-widget
+        </p>
+        <h2 class="font-serif text-4xl font-semibold leading-tight tracking-tight">
+          Plug-and-play på kundens hjemmeside
+        </h2>
+        <p class="mt-4 max-w-2xl text-base text-[rgb(var(--muted))]">
+          Kunden dryppes et iframe på sin egen sponsor-side. Tallet opdaterer
+          sig live mod OrbisX. Eksempel:
+        </p>
+
+        <div class="mt-6 rounded-xl border border-[rgb(var(--border))] overflow-hidden">
+          <iframe
+            src="/embed?sponsored=Aalborg+Håndbold&color=%23c8102e&label=Vores+mediedækning+i+2026"
+            class="w-full h-[180px] border-0"
+            title="Live AVE-widget for Aalborg Håndbold"
+          ></iframe>
+        </div>
+
+        <details class="mt-4 text-sm">
+          <summary class="cursor-pointer text-[rgb(var(--muted))] hover:text-[rgb(var(--fg))] transition">
+            Vis HTML-snippet kunden kan kopiere
+          </summary>
+          <pre class="mt-3 overflow-x-auto rounded-md border border-[rgb(var(--border))] bg-[rgb(var(--border))]/15 p-4 font-mono text-xs"><code>&lt;iframe
+  src=&quot;https://dit-domæne.dk/embed?sponsored=Aalborg+H%C3%A5ndbold&amp;color=%23c8102e&amp;label=Vores+mediedækning&quot;
+  width=&quot;100%&quot;
+  height=&quot;180&quot;
+  frameborder=&quot;0&quot;
+  title=&quot;Mediedækning&quot;
+&gt;&lt;/iframe&gt;</code></pre>
+        </details>
+      </section>
     </main>
 
     <footer class="mt-24 border-t border-[rgb(var(--border))]">

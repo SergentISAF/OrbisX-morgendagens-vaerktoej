@@ -26,12 +26,12 @@ Resten af dokumentet er teknisk og lang. Bare scroll. Du kan altid komme tilbage
 
 | Felt | Værdi |
 |------|-------|
-| Fase | Planning (ingen kode skrevet endnu) |
+| Fase | **Fase 6-8 lite leveret** (brand-monitor, konkurrent, sponsorat-rapport) |
 | Sidst opdateret | 2026-05-18 |
-| Næste skridt | Afklar OrbisX-auth-model (org-konto vs per-kunde) før byggestart |
-| Repo-navn | `OrbisX-morgendagens-værktøj` |
-| GitHub-org | Orbis arbejds-org (præcist navn TBD) |
+| Næste skridt | Bug-rapport til Mikkel + Orbis-team afklarer auth/backend-bugs |
+| Repo-navn | `OrbisX-morgendagens-værktøj` (brand-navn TBD) |
 | Lokal sti | `/Users/dan/dev/OrbisX-morgendagens-værktøj` |
+| Demo URL | http://localhost:4321 |
 
 ---
 
@@ -412,61 +412,69 @@ OrbisX-morgendagens-værktøj/
 
 Hver fase = målbar leverance. Tjek af efterhånden.
 
-- [ ] **Fase 0 — Afklaring** (før kode)
-  - [ ] OrbisX-auth-model bekræftet med Orbis-team
-  - [ ] Orbis GitHub-org-navn bekræftet
+- [x] **Fase 0 — Afklaring** (delvis: read-endpoints virker uden auth)
+  - [x] OrbisX read-endpoints virker uden auth (verificeret)
+  - [ ] User-scoped endpoints venter på Orbis-team backend-fix
+  - [ ] Orbis GitHub-org-navn (Dan bruger sin egen SergentISAF for nu)
   - [ ] Domæne til dashboard valgt
-  - [ ] OrbisX-cluster-strategi bekræftet (opretter vi clusters via API'et?)
-- [ ] **Fase 1 — Skelet (Mono-repo)**
-  - [ ] Repo oprettet på Orbis GitHub-org
-  - [ ] Mono-repo struktur: `api/`, `sdks/python/`, `sdks/typescript/`, `embed/`, `reference-dashboard/`, `docs-site/`
-  - [ ] docker-compose med Postgres + Redis kører lokalt
-  - [ ] `api/`: FastAPI hello world + OpenAPI auto-spec
-  - [ ] `reference-dashboard/`: Astro + React islands hello world
-  - [ ] `docs-site/`: Astro/Starlight setup med OpenAPI-auto-render
-  - [ ] Tailwind CSS + design-tokens (farver, spacing, typografi)
-  - [ ] shadcn/ui-komponenter bootstrappet
-  - [ ] Dark mode-skift virker
-  - [ ] Storybook eller component-galleri
-  - [ ] CI-pipeline (lint + tests per workspace)
-- [ ] **Fase 2 — OrbisX-klient**
-  - [ ] Typed Python-klient generet fra `openapi.json`
-  - [ ] Test-call mod live OrbisX-endpoint
-  - [ ] Klient gemt i `backend/app/sources/orbisx.py`
-- [ ] **Fase 3 — Auth + Tenants (API-keys + JWT)**
-  - [ ] API-key auth som primær (til SDK/embed/integration)
-  - [ ] JWT som sekundær (til reference-dashboard login)
-  - [ ] Tenant + User + Role-model (admin/editor/viewer)
-  - [ ] API-key management UI i reference-dashboard
-  - [ ] Rate limiting per API-key
-  - [ ] Audit-log over kald
-- [ ] **Fase 4 — TrackedEntity CRUD**
-  - [ ] Backend API for CRUD
-  - [ ] Frontend UI til at oprette/redigere entities
-  - [ ] Validering + tests
-- [ ] **Fase 5 — Sync-job**
-  - [ ] Når entity oprettes → opret/find OrbisX-cluster
-  - [ ] Pull artikler periodisk
-  - [ ] Gem i shared corpus med dedup
-  - [ ] Job-monitoring + retry-logik
-- [ ] **Fase 6 — Værktøj #1: Brand-monitor (API + SDK + Embed + Dashboard)**
-  - [ ] `api/`: Endpoints til volume-timeline, outlets, articles m. paginering
-  - [ ] `sdks/python/` + `sdks/typescript/`: Auto-genererede klienter + examples
-  - [ ] `embed/`: `<orbisx-brand-monitor>` web component + React-komponent
-  - [ ] `reference-dashboard/`: Polished Observable Plot/ECharts visning
-  - [ ] `docs-site/`: Brand-monitor-quickstart med kode-eksempler i 3 sprog
-  - [ ] Mobil-layout testet i reference-dashboard og embed
-  - [ ] Morgenbrief-widget på forsiden ("Siden i går: ...")
-  - [ ] Kvalitets-review mod premium-reference (Linear/Stripe-niveau) — gate til fase 7
-  - [ ] Første rigtig leverance til pilot-kunde
-- [ ] **Fase 7 — Værktøj #2: Sponsorat-tracker**
-  - [ ] Co-mention-logik
-  - [ ] Sponsorat-dashboard (sponsor × sponseret over tid)
-  - [ ] Sammenligning før/efter sponsorat-start
-- [ ] **Fase 8 — Værktøj #3: Konkurrent-sammenligning**
-  - [ ] Multi-entity overlay-graf
-  - [ ] Share-of-Voice-beregning
-  - [ ] Konkurrent-tabel
+  - [ ] Brand-navn valgt (igangværende — Glimt taget, søger ledige)
+- [x] **Fase 1 — Skelet (Mono-repo)**
+  - [x] Lokal repo oprettet, git init
+  - [x] Mono-repo struktur: `api/`, `reference-dashboard/`, `infra/` + placeholders for `sdks/`, `embed/`, `docs-site/`
+  - [x] docker-compose med Postgres + Redis kører
+  - [x] `api/`: FastAPI hello world + auto OpenAPI på /docs
+  - [x] `reference-dashboard/`: Astro + React islands kører
+  - [ ] `docs-site/`: ikke bootstrappet endnu
+  - [x] Tailwind CSS + design-tokens (Inter + Fraunces, brand-farve, dark mode)
+  - [x] Dark mode-skift virker (ThemeToggle)
+  - [ ] shadcn/ui formelle komponenter (vi har egen custom stil)
+  - [ ] Storybook
+  - [ ] CI-pipeline
+- [x] **Fase 2 — OrbisX-klient**
+  - [x] Typed Python-klient hand-skrevet med Pydantic + httpx
+  - [x] Test-call mod live OrbisX virker (134 medier, 7K+ artikler)
+  - [x] Klient i `api/app/sources/orbisx.py`
+  - [x] Auto-retry på OrbisX 5xx-fejl (backend er flaky)
+- [ ] **Fase 3 — Auth + Tenants** (sprunget over indtil videre — public API rækker)
+  - [ ] API-key auth
+  - [ ] JWT login til reference-dashboard
+  - [ ] Tenant + User + Role-model
+  - [ ] Rate limiting
+- [ ] **Fase 4 — TrackedEntity CRUD** (sprunget over — ingen persistent state endnu)
+  - [ ] Backend CRUD
+  - [ ] Frontend UI
+- [ ] **Fase 5 — Sync-job** (venter på OrbisX cluster-adgang)
+  - [ ] Opret OrbisX-cluster når entity tilføjes
+  - [ ] Periodisk pull → shared corpus med dedup
+  - [ ] Job-monitoring
+- [x] **Fase 6 — Værktøj #1: Brand-monitor**
+  - [x] `api/`: `/api/brand/overview` endpoint med stats + top outlets + recent articles
+  - [x] `reference-dashboard/`: BrandOverview-komponent med stat-kort + outlet-bars + artikel-liste
+  - [x] Availability-labels (Gratis/Betalingsvæg) på artikler
+  - [x] Live søgning fungerer (Carlsberg → 7K omtaler m.m.)
+  - [ ] `sdks/`: ikke startet endnu
+  - [ ] `embed/`: ikke som dedikeret brand-monitor (men generel AVE-embed findes, se nedenfor)
+  - [ ] `docs-site/`: ikke startet
+  - [ ] Mobil-layout-test
+  - [ ] Pilot-kunde
+- [x] **Fase 7 — Værktøj #2: Sponsorat-rapport** (lite-version)
+  - [x] Print-klar rapport-side med kunde-brandable AVE-banner
+  - [x] AVE-beregning (annonceværdi i kr) per outlet-tier × forsidetid
+  - [x] Top historier (mest prominente artikler, sorteret efter forsidetid)
+  - [x] Top medier med procent-bar
+  - [x] Eksempler på dækning + metode-note
+  - [x] Brand-farver via `?color=#hex`
+  - [x] Logo-upload via `?logo=URL`
+  - [x] CSV-eksport til Excel-analytikere
+  - [x] Strict phrase-filter (fjerner falske positiver for fler-ord-søgninger)
+  - [x] Sponsor som aktivt søgeord → co-mention via titel-tekst-match
+  - [x] Form på dashboard så man ikke skal redigere URL'er
+  - [ ] **Brødtekst-baseret co-mention** (venter på OrbisX cluster-adgang)
+  - [ ] Sammenligning før/efter sponsorat-start (venter på OrbisX dato-filter-fix)
+- [x] **Fase 8 — Værktøj #3: Konkurrent-sammenligning**
+  - [x] `/api/compare/overview` endpoint (parallel henter 2-5 brands)
+  - [x] BrandCompare-komponent med tag-input + Share-of-Voice stacked bar
+  - [x] Per-brand kort med total, medier, forsidetid, top medier
 - [ ] **Fase 10+ — Consumer + Press (noteret, detaljer kommer senere)**
   - [ ] Reference-dashboard åbnes for offentligheden som gratis Ground-News-lignende læseoplevelse
   - [ ] Journalist-specifikke features (real-time alerts, hvem-skrev-først, blind-spots)
@@ -475,6 +483,12 @@ Hver fase = målbar leverance. Tjek af efterhånden.
   - [ ] Bias/vinkel-labels per dansk outlet
   - [ ] Freemium-arkitektur
   - [ ] Branding skal kunne dække både B2B og B2C — noteret som constraint i naming-jagten
+
+- [x] **Bonus: Embed-widget** (plug-and-play kerne-tesen demonstreret)
+  - [x] `/embed?sponsored=...&color=...&label=...` mini-side viser live AVE
+  - [x] iframe-snippet på dashboardet kunden kan kopiere
+  - [ ] Vanilla JS `<script>`-bundle (kommer senere)
+  - [ ] React-komponent (NPM-pakke) (kommer senere)
 
 - [ ] **Fase 9 — Deploy + Daily-Return-polering**
   - [ ] Caddyfile + Cloudflare Tunnel-config
@@ -575,3 +589,6 @@ Hold log over hvad der ændres i denne fil.
 | 2026-05-18 | Stort pivot: Forretningsmodel sat til Backend-as-Service plug-and-play. Mono-repo med api/sdks/embed/reference-dashboard/docs-site. Mission rewritten. | Dan: "Vi laver back end for din front end plug and play" |
 | 2026-05-18 | Consumer/Press-spor tilføjet som fase 10+ | Dan: "hvordan bliver vi et produkt som selv presse kommer til at bruge. samt alle i danmark en må de læser deres nyheder som ground news". Naming skal nu også dække B2C. |
 | 2026-05-18 | Fase 1 skelet bygget + Fase 2 startet — OrbisX-klient virker uden auth | Live test viste 134 medier, 7.604 artikler matcher "Carlsberg" |
+| 2026-05-18 | Fase 6/7/8 lite leveret samme dag som planning startede | Brand-monitor + konkurrent + sponsorat-rapport med AVE, brand-farver, logo, CSV-eksport, embed-widget. Hyperfokus-session. |
+| 2026-05-18 | Strict phrase-filter tilføjet | "Aalborg Håndbold" matchede "håndbold-stjerner i Aalborg-byen" — fjernede falske positiver |
+| 2026-05-18 | Bug-rapport til Mikkel påbegyndt | OrbisX backend-fejl blokerer cluster-adgang + dato-filter + trending/metadata/contextual-endpoints |
