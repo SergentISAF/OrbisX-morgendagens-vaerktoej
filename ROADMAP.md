@@ -497,7 +497,16 @@ Hver fase = målbar leverance. Tjek af efterhånden.
   - [ ] Vanilla JS `<script>`-bundle (kommer senere)
   - [ ] React-komponent (NPM-pakke) (kommer senere)
 
-- [ ] **Fase 9 — Deploy + Daily-Return-polering**
+- [x] **Fase 9 — Deploy** (Mikkel-demo niveau, ikke produktion-polering endnu)
+  - [x] Public GitHub-repo: SergentISAF/OrbisX-morgendagens-vaerktoej
+  - [x] Deployed på CT 105 (services-container), port 8095
+  - [x] Caddy reverse proxy: /api/* → api, /* → dashboard (statisk Astro-build)
+  - [x] Postgres + Redis volumes på CT 105
+  - [x] Public URL via Tailscale Funnel: https://elpris-dashboard.tail330027.ts.net
+  - [ ] **app.holmstadit.dk** kræver: Cloudflare Dashboard → Zero Trust → Networks → Tunnels → holmstad-webhost → Public Hostnames → tilføj `app.holmstadit.dk` → service `http://192.168.10.56:8095`. Plus CNAME-record. Dan tager dialogen.
+  - [ ] Backup-script til Postgres
+  - [ ] Repo skift tilbage til private + deploy-key til CT 105
+  - [ ] Onboarding-flow polering
   - [ ] Caddyfile + Cloudflare Tunnel-config
   - [ ] Deploy til NAS Docker-container
   - [ ] Domæne pegende på production
