@@ -70,10 +70,11 @@ export default function EmbedAve() {
 
   return (
     <div
-      className="p-6"
+      className="rounded-2xl border bg-white p-6 shadow-sm"
       style={
         {
-          "--accent": accent,
+          color: "#111",
+          borderColor: "#e5e7eb",
         } as React.CSSProperties
       }
     >
@@ -83,18 +84,24 @@ export default function EmbedAve() {
       >
         {params.label}
       </div>
-      <div className="mt-2 font-serif text-4xl font-semibold leading-none tracking-tight md:text-5xl">
+      <div
+        className="mt-2 font-serif text-4xl font-semibold leading-none tracking-tight md:text-5xl"
+        style={{ color: "#111" }}
+      >
         {nf.format(data.ave_extrapolated_dkk)} kr
       </div>
-      <div className="mt-3 flex flex-wrap items-baseline gap-x-4 gap-y-1 text-xs text-gray-500">
+      <div
+        className="mt-3 flex flex-wrap items-baseline gap-x-4 gap-y-1 text-xs"
+        style={{ color: "#6b7280" }}
+      >
         <span>
-          <span className="font-medium text-gray-800">
+          <span className="font-medium" style={{ color: "#111" }}>
             {nf.format(data.total_matches)}
           </span>{" "}
           omtaler
         </span>
         <span>
-          <span className="font-medium text-gray-800">
+          <span className="font-medium" style={{ color: "#111" }}>
             {data.unique_outlets}
           </span>{" "}
           medier
