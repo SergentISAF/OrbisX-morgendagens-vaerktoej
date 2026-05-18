@@ -252,6 +252,23 @@ async def sponsorship_report(
     except Exception as e:
         raise HTTPException(status_code=502, detail=f"OrbisX fejlede: {e}") from e
 
+    # Hvis sponsored-navnet er fler-ord (fx "Aalborg Håndbold"), filtrer hårdt:
+    # kun artikler hvor den FULDE frase optræder i titel/frontpage-titel.
+    # Det fjerner artikler der bare matcher hvert ord for sig (fx "håndbold-stjerner i Aalborg").
+    def has_phrase_in_title(a: Article, phrase: str) -> bool:
+        title_text = ((a.article_title or "") + " " + (a.frontpage_title or "")).lower()
+        return phrase.lower() in title_text
+
+    sponsored_is_phrase = len(sponsored.strip().split()) >= 2
+    if sponsored_is_phrase and articles:
+        original_sample_size = len(articles)
+        articles_strict = [a for a in articles if has_phrase_in_title(a, sponsored)]
+        if articles_strict:
+            # Estimer den "rigtige" total: oprindelig total × ratio af strict til pre-filter
+            ratio = len(articles_strict) / original_sample_size
+            total = max(int(total * ratio), len(articles_strict))
+            articles = articles_strict
+
     outlet_counts = Counter(a.site_name for a in articles)
     times = [a.time_on_frontpage for a in articles if a.time_on_frontpage is not None]
     times_sorted = sorted(times)
