@@ -1,0 +1,38 @@
+---
+import "../styles/global.css";
+import "../styles/print.css";
+import SponsorshipReport from "../components/SponsorshipReport";
+---
+
+<!doctype html>
+<html lang="da">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Mediedækningsrapport</title>
+    <script is:inline>
+      const t = localStorage.getItem("theme");
+      const prefersDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
+      if (t === "dark" || (!t && prefersDark)) document.documentElement.classList.add("dark");
+    </script>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Fraunces:wght@500;600;700&display=swap"
+      rel="stylesheet"
+    />
+  </head>
+  <body>
+    <main class="mx-auto max-w-4xl px-6 py-12">
+      <div class="no-print mb-8">
+        <a
+          href="/"
+          class="text-sm text-[rgb(var(--muted))] underline-offset-4 hover:underline"
+        >
+          ← Tilbage til dashboard
+        </a>
+      </div>
+      <SponsorshipReport client:load />
+    </main>
+  </body>
+</html>

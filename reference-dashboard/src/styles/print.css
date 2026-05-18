@@ -1,0 +1,40 @@
+@media print {
+  /* Hide non-print elements */
+  .no-print,
+  header nav,
+  button:not(.print-keep),
+  footer {
+    display: none !important;
+  }
+
+  body {
+    background: white !important;
+    color: black !important;
+  }
+
+  /* Force light theme colors in print */
+  :root {
+    --bg: 255 255 255 !important;
+    --fg: 17 17 17 !important;
+    --muted: 80 80 80 !important;
+    --border: 200 200 200 !important;
+  }
+
+  /* Avoid awkward page breaks */
+  h1, h2, h3 {
+    page-break-after: avoid;
+  }
+
+  .page-break {
+    page-break-before: always;
+  }
+
+  /* Make article list compact */
+  .print-compact {
+    font-size: 10pt !important;
+  }
+
+  @page {
+    margin: 2cm 1.8cm;
+  }
+}

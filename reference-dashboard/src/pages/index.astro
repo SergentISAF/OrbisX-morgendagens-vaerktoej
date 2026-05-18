@@ -64,14 +64,30 @@ import BrandCompare from "../components/BrandCompare";
       <BrandCompare client:load />
 
       <section class="mt-24">
-        <article class="rounded-xl border border-dashed border-[rgb(var(--border))] p-6">
-          <h2 class="font-serif text-xl font-semibold text-[rgb(var(--muted))]">
-            Sponsorat-tracker
-          </h2>
-          <p class="mt-2 text-sm text-[rgb(var(--muted))]">
-            Co-omtaler af sponsor og sponseret. Værdi over tid. Kommer i fase 7.
-          </p>
-        </article>
+        <p class="mb-4 text-sm uppercase tracking-widest text-[rgb(var(--muted))]">
+          Sponsorat-rapport
+        </p>
+        <h2 class="font-serif text-4xl font-semibold leading-tight tracking-tight">
+          Lav rapport til en kunde
+        </h2>
+        <p class="mt-4 max-w-2xl text-base text-[rgb(var(--muted))]">
+          Print-klar rapport om en sponseret entitets samlede mediedækning,
+          klar til at give videre til hovedsponsoren.
+        </p>
+        <div class="mt-6 flex flex-wrap gap-3">
+          <a
+            href="/report?sponsored=Aalborg%20H%C3%A5ndbold&sponsor=Carlsberg"
+            class="rounded-md bg-brand-500 px-4 py-2 text-sm font-medium text-white hover:bg-brand-600 transition"
+          >
+            Eksempel: Aalborg Håndbold → Carlsberg
+          </a>
+          <a
+            href="/report?sponsored=FCK&sponsor=Carlsberg"
+            class="rounded-md border border-[rgb(var(--border))] px-4 py-2 text-sm font-medium hover:bg-[rgb(var(--border))]/30 transition"
+          >
+            Eksempel: FCK → Carlsberg
+          </a>
+        </div>
       </section>
     </main>
 
