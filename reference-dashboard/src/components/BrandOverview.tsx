@@ -198,11 +198,9 @@ export default function BrandOverview() {
                       rel="noopener noreferrer"
                       className="block hover:opacity-70 transition"
                     >
-                      <div className="flex items-start gap-2">
-                        <AvailabilityBadge availability={a.availability} />
-                        <div className="text-sm font-medium leading-snug">
-                          {a.article_title ?? "(uden titel)"}
-                        </div>
+                      <AvailabilityBadge availability={a.availability} />
+                      <div className="mt-2 text-sm font-medium leading-snug">
+                        {a.article_title ?? "(uden titel)"}
                       </div>
                       <div className="mt-1 flex items-center gap-2 text-xs text-[rgb(var(--muted))]">
                         <span className="font-medium">{a.site_name}</span>
