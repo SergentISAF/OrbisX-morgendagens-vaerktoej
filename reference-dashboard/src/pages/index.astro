@@ -1,0 +1,91 @@
+---
+import "../styles/global.css";
+import ThemeToggle from "../components/ThemeToggle";
+import ApiStatus from "../components/ApiStatus";
+---
+
+<!doctype html>
+<html lang="da">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>OrbisX — Reference Dashboard</title>
+    <script is:inline>
+      const t = localStorage.getItem("theme");
+      const prefersDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
+      if (t === "dark" || (!t && prefersDark)) document.documentElement.classList.add("dark");
+    </script>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Fraunces:wght@500;600;700&display=swap"
+      rel="stylesheet"
+    />
+  </head>
+  <body>
+    <header class="border-b border-[rgb(var(--border))]">
+      <div class="mx-auto flex max-w-6xl items-center justify-between px-6 py-4">
+        <div class="flex items-center gap-3">
+          <span class="font-serif text-2xl font-semibold tracking-tight">OrbisX</span>
+          <span class="text-xs text-[rgb(var(--muted))]">arbejdsnavn</span>
+        </div>
+        <ThemeToggle client:load />
+      </div>
+    </header>
+
+    <main class="mx-auto max-w-6xl px-6 py-16">
+      <div class="max-w-2xl">
+        <p class="mb-4 text-sm uppercase tracking-widest text-[rgb(var(--muted))]">
+          Reference Dashboard
+        </p>
+        <h1 class="font-serif text-5xl font-semibold leading-tight tracking-tight">
+          Morgendagens værktøj for medieovervågning.
+        </h1>
+        <p class="mt-6 text-lg text-[rgb(var(--muted))]">
+          Plug-and-play motor. Backend som andre plugger deres frontend ind i. Denne side er
+          showcase, ikke produkt.
+        </p>
+
+        <div class="mt-10 flex items-center gap-3">
+          <ApiStatus client:load />
+          <a
+            href="http://localhost:8000/docs"
+            class="rounded-md bg-brand-500 px-4 py-2 text-sm font-medium text-white hover:bg-brand-600 transition"
+          >
+            Åbn API-docs
+          </a>
+        </div>
+      </div>
+
+      <section class="mt-24 grid grid-cols-1 gap-6 sm:grid-cols-3">
+        <article class="rounded-xl border border-[rgb(var(--border))] p-6">
+          <h2 class="font-serif text-xl font-semibold">Brand-monitor</h2>
+          <p class="mt-2 text-sm text-[rgb(var(--muted))]">
+            Alle omtaler af ét brand. Timeline, outlets, geografi.
+          </p>
+          <p class="mt-4 text-xs uppercase tracking-wider text-[rgb(var(--muted))]">Fase 6</p>
+        </article>
+        <article class="rounded-xl border border-[rgb(var(--border))] p-6">
+          <h2 class="font-serif text-xl font-semibold">Sponsorat-tracker</h2>
+          <p class="mt-2 text-sm text-[rgb(var(--muted))]">
+            Co-omtaler af sponsor og sponseret. Værdi over tid.
+          </p>
+          <p class="mt-4 text-xs uppercase tracking-wider text-[rgb(var(--muted))]">Fase 7</p>
+        </article>
+        <article class="rounded-xl border border-[rgb(var(--border))] p-6">
+          <h2 class="font-serif text-xl font-semibold">Konkurrent-sammenligning</h2>
+          <p class="mt-2 text-sm text-[rgb(var(--muted))]">
+            Op til 5 brands side-by-side. Share-of-voice.
+          </p>
+          <p class="mt-4 text-xs uppercase tracking-wider text-[rgb(var(--muted))]">Fase 8</p>
+        </article>
+      </section>
+    </main>
+
+    <footer class="mt-24 border-t border-[rgb(var(--border))]">
+      <div class="mx-auto max-w-6xl px-6 py-6 text-xs text-[rgb(var(--muted))]">
+        Bygget på OrbisX v2 API. Endeligt brand-navn vælges senere.
+      </div>
+    </footer>
+  </body>
+</html>
