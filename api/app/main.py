@@ -4,6 +4,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from app.core.config import settings
+from app.routes import search as search_routes
 
 
 @asynccontextmanager
@@ -17,6 +18,8 @@ app = FastAPI(
     version="0.0.1",
     lifespan=lifespan,
 )
+
+app.include_router(search_routes.router)
 
 app.add_middleware(
     CORSMiddleware,

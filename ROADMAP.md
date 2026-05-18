@@ -467,6 +467,15 @@ Hver fase = målbar leverance. Tjek af efterhånden.
   - [ ] Multi-entity overlay-graf
   - [ ] Share-of-Voice-beregning
   - [ ] Konkurrent-tabel
+- [ ] **Fase 10+ — Consumer + Press (noteret, detaljer kommer senere)**
+  - [ ] Reference-dashboard åbnes for offentligheden som gratis Ground-News-lignende læseoplevelse
+  - [ ] Journalist-specifikke features (real-time alerts, hvem-skrev-først, blind-spots)
+  - [ ] Mobil-app (iOS + Android)
+  - [ ] Browser-extension
+  - [ ] Bias/vinkel-labels per dansk outlet
+  - [ ] Freemium-arkitektur
+  - [ ] Branding skal kunne dække både B2B og B2C — noteret som constraint i naming-jagten
+
 - [ ] **Fase 9 — Deploy + Daily-Return-polering**
   - [ ] Caddyfile + Cloudflare Tunnel-config
   - [ ] Deploy til NAS Docker-container
@@ -488,7 +497,7 @@ Skal afklares før de relevante faser starter.
 
 | # | Spørgsmål | Skal afklares før | Status |
 |---|-----------|-------------------|--------|
-| 1 | OrbisX-auth-model: org-konto (vi som reseller) eller per-kunde-login? Specifikationen viser `securitySchemes: {}` og `security: None`. | Fase 1 | Åben |
+| 1 | OrbisX-auth-model: org-konto (vi som reseller) eller per-kunde-login? Specifikationen viser `securitySchemes: {}` og `security: None`. | Fase 1 | **Verificeret 2026-05-18:** Read-endpoints (`/health`, `/platform/sites`, `/search/articles`) virker UDEN auth. User-scoped endpoints (`/users/{user_id}/...`) skal stadig afklares. |
 | 2 | OrbisX GitHub-org-navn? | Fase 1 | Åben |
 | 3 | Domæne til dashboard (orbis-roi.dk? internt orbis-domæne?) | Fase 9 | Åben |
 | 4 | Branding: OrbisX-brandet, hvidmærket eller fælles? | Fase 6 | Åben |
@@ -564,3 +573,5 @@ Hold log over hvad der ændres i denne fil.
 | 2026-05-18 | Tilføjet Designprincip-sektion ("Flotteste Tallerken"), frontend-stack skiftet, design-leveranser per fase | Dan markerede UX/design som primær differentiator |
 | 2026-05-18 | Tilføjet Interaktivitetsprincip ("vi bliver del af kundens projekt") | Dan: vi skal være substrat, ikke silo |
 | 2026-05-18 | Stort pivot: Forretningsmodel sat til Backend-as-Service plug-and-play. Mono-repo med api/sdks/embed/reference-dashboard/docs-site. Mission rewritten. | Dan: "Vi laver back end for din front end plug and play" |
+| 2026-05-18 | Consumer/Press-spor tilføjet som fase 10+ | Dan: "hvordan bliver vi et produkt som selv presse kommer til at bruge. samt alle i danmark en må de læser deres nyheder som ground news". Naming skal nu også dække B2C. |
+| 2026-05-18 | Fase 1 skelet bygget + Fase 2 startet — OrbisX-klient virker uden auth | Live test viste 134 medier, 7.604 artikler matcher "Carlsberg" |
