@@ -12,6 +12,13 @@ type Article = {
   time_on_frontpage: number | null;
   availability: string | null;
 };
+type AveBreakdown = {
+  total_dkk: number;
+  avg_per_article_dkk: number;
+  sample_size: number;
+  tier_distribution: Record<string, number>;
+};
+
 type Report = {
   sponsored: string;
   sponsor: string | null;
@@ -25,6 +32,8 @@ type Report = {
   availability: { free: number; paid: number };
   top_outlets: OutletStat[];
   sample_articles: Article[];
+  ave_sample: AveBreakdown;
+  ave_extrapolated_dkk: number;
   co_mention_note: string;
 };
 
@@ -119,6 +128,21 @@ export default function SponsorshipReport() {
           Genereret {today} · {data.period_label}
         </p>
       </header>
+
+      <section className="mt-10 rounded-2xl border border-[rgb(var(--border))] bg-brand-500/5 p-8">
+        <div className="text-xs uppercase tracking-widest text-brand-500">
+          Samlet annonceværdi (AVE)
+        </div>
+        <div className="mt-3 font-serif text-5xl font-semibold leading-none tracking-tight md:text-6xl">
+          {nf.format(data.ave_extrapolated_dkk)} kr
+        </div>
+        <p className="mt-4 max-w-2xl text-sm text-[rgb(var(--muted))]">
+          Estimat for hvad medieomtalen ville have kostet som købte annoncer.
+          Beregnet ud fra {data.ave_sample.sample_size} samplede artikler:
+          gennemsnit {nf.format(data.ave_sample.avg_per_article_dkk)} kr per artikel
+          × {nf.format(data.total_matches)} samlede omtaler.
+        </p>
+      </section>
 
       <section className="mt-10">
         <h2 className="font-serif text-xl font-semibold">Overblik</h2>
@@ -233,6 +257,12 @@ export default function SponsorshipReport() {
         <p className="mt-2">{data.co_mention_note}</p>
         <p className="mt-2">
           Data fra OrbisX (134 danske medier). Forsidetid måler hvor længe artiklen lå synligt på mediets forside.
+        </p>
+        <p className="mt-2">
+          AVE-værdier er rough industry estimates baseret på outlet-tier
+          (broadcast/national/business/regional/niche) × forsidetid-prominence.
+          Brancher generelt accepterer AVE som indikativ værdi, ikke præcis pris.
+          Værdier kan justeres per kunde når rate-cards indsamles.
         </p>
       </section>
     </div>

@@ -10,6 +10,7 @@ from collections import Counter
 from fastapi import APIRouter, HTTPException, Query
 from pydantic import BaseModel
 
+from app.services.ave import ave_summary
 from app.sources.orbisx import Article, OrbisXClient, SearchResponse, Site
 
 router = APIRouter(prefix="/api", tags=["search"])
@@ -53,6 +54,13 @@ class AvailabilityStat(BaseModel):
     paid: int
 
 
+class AveBreakdown(BaseModel):
+    total_dkk: int
+    avg_per_article_dkk: int
+    sample_size: int
+    tier_distribution: dict[str, int]
+
+
 class SponsorshipReport(BaseModel):
     sponsored: str
     sponsor: str | None
@@ -66,6 +74,8 @@ class SponsorshipReport(BaseModel):
     availability: AvailabilityStat
     top_outlets: list[OutletStat]
     sample_articles: list[Article]
+    ave_sample: AveBreakdown
+    ave_extrapolated_dkk: int
     co_mention_note: str
 
 
@@ -198,22 +208,25 @@ async def sponsorship_report(
     Bruger PUBLIC OrbisX search. Co-mention med sponsor i artikel-tekst
     kræver fuld OrbisX cluster-adgang og kommer i en senere fase.
     """
-    # Fetch flere sider parallelt for større sample
+    # Fetch flere sider parallelt for større sample.
+    # OrbisX har af og til 500-fejl på højere sider, så vi bruger return_exceptions
+    # og fortsætter med de sider der virker.
     pages_to_fetch = (sample_size + 99) // 100  # 100 per page max
     async with OrbisXClient() as client:
-        try:
-            responses = await asyncio.gather(
-                *[
-                    client.search_articles(
-                        sponsored, limit=100, page=p, country=country
-                    )
-                    for p in range(1, pages_to_fetch + 1)
-                ]
-            )
-        except Exception as e:
-            raise HTTPException(status_code=502, detail=f"OrbisX fejlede: {e}") from e
+        results = await asyncio.gather(
+            *[
+                client.search_articles(sponsored, limit=100, page=p, country=country)
+                for p in range(1, pages_to_fetch + 1)
+            ],
+            return_exceptions=True,
+        )
 
-    total = responses[0].total_cluster_articles if responses else 0
+    responses = [r for r in results if not isinstance(r, Exception)]
+    if not responses:
+        first_err = next((r for r in results if isinstance(r, Exception)), None)
+        raise HTTPException(status_code=502, detail=f"OrbisX fejlede: {first_err}")
+
+    total = responses[0].total_cluster_articles
     articles: list[Article] = []
     for r in responses:
         articles.extend(r.results)
@@ -235,6 +248,13 @@ async def sponsorship_report(
         "(kræver fuld OrbisX-adgang)."
     )
 
+    ave_data = ave_summary(articles)
+    # Ekstrapolér til hele corpus baseret på sample-snit
+    if len(articles) > 0 and total > 0:
+        extrapolated = int(ave_data["avg_per_article_dkk"] * total)
+    else:
+        extrapolated = 0
+
     return SponsorshipReport(
         sponsored=sponsored,
         sponsor=sponsor,
@@ -251,5 +271,7 @@ async def sponsorship_report(
             for name, count in outlet_counts.most_common(15)
         ],
         sample_articles=articles[:12],
+        ave_sample=AveBreakdown(**ave_data),
+        ave_extrapolated_dkk=extrapolated,
         co_mention_note=co_mention_note,
     )
