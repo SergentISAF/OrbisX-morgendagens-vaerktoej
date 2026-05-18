@@ -19,6 +19,16 @@ type AveBreakdown = {
   tier_distribution: Record<string, number>;
 };
 
+type CoMention = {
+  sponsor_total_matches: number;
+  sponsor_sampled: number;
+  intersection_count: number;
+  intersection_pct_of_sponsored_sample: number;
+  intersection_articles: Article[];
+  intersection_ave_dkk: number;
+  method: string;
+};
+
 type Report = {
   sponsored: string;
   sponsor: string | null;
@@ -34,6 +44,7 @@ type Report = {
   sample_articles: Article[];
   ave_sample: AveBreakdown;
   ave_extrapolated_dkk: number;
+  co_mention: CoMention | null;
   co_mention_note: string;
 };
 
@@ -211,6 +222,72 @@ export default function SponsorshipReport() {
           })}
         </ol>
       </section>
+
+      {data.co_mention && data.sponsor && (
+        <section className="mt-12 rounded-2xl border-2 border-brand-500/30 bg-brand-500/5 p-6">
+          <p className="text-xs uppercase tracking-widest text-brand-500">
+            Sponsor-co-mention
+          </p>
+          <h2 className="mt-2 font-serif text-2xl font-semibold tracking-tight">
+            Hvor {data.sponsored} og {data.sponsor} optræder sammen
+          </h2>
+          <div className="mt-6 grid gap-6 md:grid-cols-3">
+            <div>
+              <div className="font-serif text-3xl font-semibold tabular-nums">
+                {data.co_mention.intersection_count}
+              </div>
+              <div className="mt-1 text-xs uppercase tracking-wider text-[rgb(var(--muted))]">
+                Fælles artikler i sample
+              </div>
+            </div>
+            <div>
+              <div className="font-serif text-3xl font-semibold tabular-nums">
+                {data.co_mention.intersection_pct_of_sponsored_sample.toFixed(1)}%
+              </div>
+              <div className="mt-1 text-xs uppercase tracking-wider text-[rgb(var(--muted))]">
+                Andel af {data.sponsored}-omtaler
+              </div>
+            </div>
+            <div>
+              <div className="font-serif text-3xl font-semibold tabular-nums">
+                {nf.format(data.co_mention.intersection_ave_dkk)} kr
+              </div>
+              <div className="mt-1 text-xs uppercase tracking-wider text-[rgb(var(--muted))]">
+                AVE i co-mention-sample
+              </div>
+            </div>
+          </div>
+          {data.co_mention.intersection_articles.length > 0 ? (
+            <ul className="mt-6 divide-y divide-[rgb(var(--border))]">
+              {data.co_mention.intersection_articles.map((a) => (
+                <li key={a.article_id} className="py-3">
+                  <a
+                    href={a.article_url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="block hover:opacity-70 transition"
+                  >
+                    <div className="text-sm font-medium leading-snug">
+                      {a.article_title ?? "(uden titel)"}
+                    </div>
+                    <div className="mt-1 flex items-center gap-2 text-xs text-[rgb(var(--muted))]">
+                      <span className="font-medium">{a.site_name}</span>
+                      {a.article_created && <span>· {a.article_created}</span>}
+                    </div>
+                  </a>
+                </li>
+              ))}
+            </ul>
+          ) : (
+            <p className="mt-6 text-sm text-[rgb(var(--muted))]">
+              Ingen fælles artikler fundet i sample. Det er enten fordi sponsoratet
+              ikke får direkte omtale i de seneste artikler, eller fordi vi har
+              ramt sample-grænsen (kræver fuld OrbisX cluster-adgang for nøjagtige tal).
+            </p>
+          )}
+          <p className="mt-4 text-xs text-[rgb(var(--muted))]">{data.co_mention.method}</p>
+        </section>
+      )}
 
       <section className="mt-12 page-break">
         <h2 className="font-serif text-xl font-semibold">Eksempler på dækning</h2>

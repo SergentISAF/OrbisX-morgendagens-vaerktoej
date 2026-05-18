@@ -4,6 +4,7 @@ import ThemeToggle from "../components/ThemeToggle";
 import ApiStatus from "../components/ApiStatus";
 import BrandOverview from "../components/BrandOverview";
 import BrandCompare from "../components/BrandCompare";
+import ReportForm from "../components/ReportForm";
 ---
 
 <!doctype html>
@@ -72,22 +73,10 @@ import BrandCompare from "../components/BrandCompare";
         </h2>
         <p class="mt-4 max-w-2xl text-base text-[rgb(var(--muted))]">
           Print-klar rapport om en sponseret entitets samlede mediedækning,
-          klar til at give videre til hovedsponsoren.
+          klar til at give videre til hovedsponsoren. Indtast to søgeord —
+          vi finder også hvor de optræder sammen.
         </p>
-        <div class="mt-6 flex flex-wrap gap-3">
-          <a
-            href="/report?sponsored=Aalborg%20H%C3%A5ndbold&sponsor=Carlsberg"
-            class="rounded-md bg-brand-500 px-4 py-2 text-sm font-medium text-white hover:bg-brand-600 transition"
-          >
-            Eksempel: Aalborg Håndbold → Carlsberg
-          </a>
-          <a
-            href="/report?sponsored=FCK&sponsor=Carlsberg"
-            class="rounded-md border border-[rgb(var(--border))] px-4 py-2 text-sm font-medium hover:bg-[rgb(var(--border))]/30 transition"
-          >
-            Eksempel: FCK → Carlsberg
-          </a>
-        </div>
+        <ReportForm client:load />
       </section>
     </main>
 

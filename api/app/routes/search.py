@@ -5,6 +5,7 @@ shared corpus-lookup (dedup på tværs af kunder) og vores egen ROI-logik.
 """
 
 import asyncio
+import re
 from collections import Counter
 
 from fastapi import APIRouter, HTTPException, Query
@@ -61,6 +62,16 @@ class AveBreakdown(BaseModel):
     tier_distribution: dict[str, int]
 
 
+class CoMention(BaseModel):
+    sponsor_total_matches: int
+    sponsor_sampled: int
+    intersection_count: int
+    intersection_pct_of_sponsored_sample: float
+    intersection_articles: list[Article]
+    intersection_ave_dkk: int
+    method: str
+
+
 class SponsorshipReport(BaseModel):
     sponsored: str
     sponsor: str | None
@@ -76,6 +87,7 @@ class SponsorshipReport(BaseModel):
     sample_articles: list[Article]
     ave_sample: AveBreakdown
     ave_extrapolated_dkk: int
+    co_mention: CoMention | None
     co_mention_note: str
 
 
@@ -208,29 +220,36 @@ async def sponsorship_report(
     Bruger PUBLIC OrbisX search. Co-mention med sponsor i artikel-tekst
     kræver fuld OrbisX cluster-adgang og kommer i en senere fase.
     """
-    # Fetch flere sider parallelt for større sample.
-    # OrbisX har af og til 500-fejl på højere sider, så vi bruger return_exceptions
-    # og fortsætter med de sider der virker.
     pages_to_fetch = (sample_size + 99) // 100  # 100 per page max
-    async with OrbisXClient() as client:
-        results = await asyncio.gather(
-            *[
-                client.search_articles(sponsored, limit=100, page=p, country=country)
-                for p in range(1, pages_to_fetch + 1)
-            ],
-            return_exceptions=True,
-        )
 
-    responses = [r for r in results if not isinstance(r, Exception)]
-    if not responses:
-        first_err = next((r for r in results if isinstance(r, Exception)), None)
-        raise HTTPException(status_code=502, detail=f"OrbisX fejlede: {first_err}")
+    async def fetch_all_pages(query: str) -> tuple[int, list[Article]]:
+        async with OrbisXClient() as c:
+            results = await asyncio.gather(
+                *[
+                    c.search_articles(query, limit=100, page=p, country=country)
+                    for p in range(1, pages_to_fetch + 1)
+                ],
+                return_exceptions=True,
+            )
+        valid = [r for r in results if not isinstance(r, Exception)]
+        if not valid:
+            raise next(r for r in results if isinstance(r, Exception))
+        total_count = valid[0].total_cluster_articles
+        arts: list[Article] = []
+        for r in valid:
+            arts.extend(r.results)
+        return total_count, arts[:sample_size]
 
-    total = responses[0].total_cluster_articles
-    articles: list[Article] = []
-    for r in responses:
-        articles.extend(r.results)
-    articles = articles[:sample_size]
+    try:
+        if sponsor:
+            (total, articles), (sponsor_total, sponsor_articles) = await asyncio.gather(
+                fetch_all_pages(sponsored), fetch_all_pages(sponsor)
+            )
+        else:
+            total, articles = await fetch_all_pages(sponsored)
+            sponsor_total, sponsor_articles = 0, []
+    except Exception as e:
+        raise HTTPException(status_code=502, detail=f"OrbisX fejlede: {e}") from e
 
     outlet_counts = Counter(a.site_name for a in articles)
     times = [a.time_on_frontpage for a in articles if a.time_on_frontpage is not None]
@@ -240,16 +259,52 @@ async def sponsorship_report(
     free = sum(1 for a in articles if (a.availability or "").lower() == "free")
     paid = sum(1 for a in articles if (a.availability or "").lower() == "paid")
 
+    # Co-mention via titel-tekst-match med ord-grænser (undgår fx "OL" matching
+    # i "politikere"). Blandt sponserede artikler finder vi dem hvor sponsorens
+    # navn også står i titlen, og omvendt. Union = co-mention-kandidater.
+    co_mention: CoMention | None = None
+    if sponsor:
+        def text_of(a: Article) -> str:
+            return ((a.article_title or "") + " " + (a.frontpage_title or "")).lower()
+
+        # Word-boundary regex for hver term (escape special chars)
+        sponsor_pat = re.compile(r"\b" + re.escape(sponsor.lower()) + r"\b")
+        sponsored_pat = re.compile(r"\b" + re.escape(sponsored.lower()) + r"\b")
+
+        in_sponsored = [a for a in articles if sponsor_pat.search(text_of(a))]
+        in_sponsor = [a for a in sponsor_articles if sponsored_pat.search(text_of(a))]
+        seen: set[int] = set()
+        unique: list[Article] = []
+        for a in in_sponsored + in_sponsor:
+            if a.article_id not in seen:
+                seen.add(a.article_id)
+                unique.append(a)
+
+        pct = (len(unique) / len(articles) * 100) if articles else 0.0
+        co_mention_ave = ave_summary(unique)
+        co_mention = CoMention(
+            sponsor_total_matches=sponsor_total,
+            sponsor_sampled=len(sponsor_articles),
+            intersection_count=len(unique),
+            intersection_pct_of_sponsored_sample=round(pct, 1),
+            intersection_articles=unique[:12],
+            intersection_ave_dkk=co_mention_ave["total_dkk"],
+            method=(
+                f"Co-mention findes ved titel-tekst-match mellem '{sponsored}' og '{sponsor}'. "
+                f"Sample: {sample_size} artikler per term. Brødtekst-baseret co-mention "
+                "(mere nøjagtigt) venter på OrbisX cluster-adgang."
+            ),
+        )
+
     co_mention_note = (
-        f"Sponsor-tagging ({sponsor}) i artikel-tekst kommer når vi har "
-        "fuld OrbisX cluster-adgang. Denne rapport viser samlet mediedækning."
+        f"Co-mention med '{sponsor}' bruger artikel-intersection mellem to "
+        "OrbisX-søgninger. For fuld brødtekst-baseret co-mention kræves "
+        "OrbisX cluster-adgang (kommer når Orbis-teamet har fixet backend-bugs)."
     ) if sponsor else (
-        "Tilføj sponsor-navn i URL'en for at få sponsor-tagging "
-        "(kræver fuld OrbisX-adgang)."
+        "Tilføj sponsor-navn for at få co-mention mellem sponseret og sponsor."
     )
 
     ave_data = ave_summary(articles)
-    # Ekstrapolér til hele corpus baseret på sample-snit
     if len(articles) > 0 and total > 0:
         extrapolated = int(ave_data["avg_per_article_dkk"] * total)
     else:
@@ -273,5 +328,6 @@ async def sponsorship_report(
         sample_articles=articles[:12],
         ave_sample=AveBreakdown(**ave_data),
         ave_extrapolated_dkk=extrapolated,
+        co_mention=co_mention,
         co_mention_note=co_mention_note,
     )
