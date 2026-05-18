@@ -41,6 +41,7 @@ type Report = {
   total_time_on_frontpage: number;
   availability: { free: number; paid: number };
   top_outlets: OutletStat[];
+  top_stories: Article[];
   sample_articles: Article[];
   ave_sample: AveBreakdown;
   ave_extrapolated_dkk: number;
@@ -293,6 +294,65 @@ export default function SponsorshipReport() {
           Heraf <span className="font-medium text-[rgb(var(--fg))]">{freePct}%</span> uden betalingsmur ({data.availability.free} af {data.sampled} i sample).
         </div>
       </section>
+
+      {data.top_stories.length > 0 && (
+        <section className="mt-12">
+          <h2 className="font-serif text-xl font-semibold">Top historier</h2>
+          <p className="mt-1 text-sm text-[rgb(var(--muted))]">
+            De mest prominente artikler — målt på hvor længe de lå på mediets forside
+          </p>
+          <ol className="mt-5 space-y-3">
+            {data.top_stories.map((a, i) => (
+              <li
+                key={a.article_id}
+                className="rounded-xl border border-[rgb(var(--border))] p-5"
+              >
+                <a
+                  href={a.article_url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="block hover:opacity-70 transition"
+                >
+                  <div className="flex items-start gap-4">
+                    <span
+                      className="font-serif text-3xl font-semibold tabular-nums leading-none"
+                      style={{ color: "var(--accent)" }}
+                    >
+                      {String(i + 1).padStart(2, "0")}
+                    </span>
+                    <div className="min-w-0 flex-1">
+                      <div className="flex items-center gap-2">
+                        {a.availability === "free" && (
+                          <span className="rounded-md bg-green-500/15 px-1.5 py-0.5 text-[9px] font-semibold uppercase tracking-wider text-green-700">
+                            Gratis
+                          </span>
+                        )}
+                        {a.availability === "paid" && (
+                          <span className="rounded-md bg-blue-500/15 px-1.5 py-0.5 text-[9px] font-semibold uppercase tracking-wider text-blue-700">
+                            Betalingsvæg
+                          </span>
+                        )}
+                      </div>
+                      <div className="mt-1 font-serif text-lg font-medium leading-snug">
+                        {a.article_title ?? "(uden titel)"}
+                      </div>
+                      <div className="mt-2 flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-[rgb(var(--muted))]">
+                        <span className="font-medium">{a.site_name}</span>
+                        {a.article_created && <span>· {a.article_created}</span>}
+                        {a.time_on_frontpage != null && (
+                          <span className="font-mono tabular-nums">
+                            · {a.time_on_frontpage}t på forsiden
+                          </span>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                </a>
+              </li>
+            ))}
+          </ol>
+        </section>
+      )}
 
       <section className="mt-12">
         <h2 className="font-serif text-xl font-semibold">Top medier</h2>

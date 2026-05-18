@@ -84,6 +84,7 @@ class SponsorshipReport(BaseModel):
     total_time_on_frontpage: int
     availability: AvailabilityStat
     top_outlets: list[OutletStat]
+    top_stories: list[Article]
     sample_articles: list[Article]
     ave_sample: AveBreakdown
     ave_extrapolated_dkk: int
@@ -325,6 +326,11 @@ async def sponsorship_report(
             OutletStat(site_name=name, count=count)
             for name, count in outlet_counts.most_common(15)
         ],
+        top_stories=sorted(
+            articles,
+            key=lambda a: a.time_on_frontpage or 0,
+            reverse=True,
+        )[:5],
         sample_articles=articles[:12],
         ave_sample=AveBreakdown(**ave_data),
         ave_extrapolated_dkk=extrapolated,
