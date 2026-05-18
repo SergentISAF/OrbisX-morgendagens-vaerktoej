@@ -7,6 +7,8 @@ uden auth, men vi sender en API-key hvis settings.orbisx_api_key er sat.
 
 from __future__ import annotations
 
+import asyncio
+
 import httpx
 from pydantic import BaseModel, ConfigDict, Field
 
@@ -100,13 +102,34 @@ class OrbisXClient:
         limit: int = 20,
         page: int = 1,
         country: str | None = None,
+        retries: int = 2,
     ) -> SearchResponse:
+        """Søg artikler. Auto-retry på 5xx (OrbisX har flaky backend lige nu)."""
         params: dict[str, str | int] = {"query": query, "limit": limit, "page": page}
         if country:
             params["country"] = country
-        r = await self._client.get("/search/articles", params=params)
-        r.raise_for_status()
-        return SearchResponse.model_validate(r.json())
+
+        last_err: Exception | None = None
+        for attempt in range(retries + 1):
+            try:
+                r = await self._client.get("/search/articles", params=params)
+                r.raise_for_status()
+                return SearchResponse.model_validate(r.json())
+            except httpx.HTTPStatusError as e:
+                if 500 <= e.response.status_code < 600 and attempt < retries:
+                    await asyncio.sleep(0.5 + attempt * 1.0)
+                    last_err = e
+                    continue
+                raise
+            except (httpx.TimeoutException, httpx.RequestError) as e:
+                if attempt < retries:
+                    await asyncio.sleep(0.5 + attempt * 1.0)
+                    last_err = e
+                    continue
+                raise
+        if last_err:
+            raise last_err
+        raise RuntimeError("Unreachable")
 
     async def similar_articles(self, article_id: int, limit: int = 10) -> SearchResponse:
         r = await self._client.get(

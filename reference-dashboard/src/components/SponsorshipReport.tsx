@@ -57,6 +57,59 @@ function readQuery() {
   };
 }
 
+function InlineReportForm() {
+  const [s, setS] = useState("");
+  const [sp, setSp] = useState("");
+  const go = (e: React.FormEvent) => {
+    e.preventDefault();
+    const p = new URLSearchParams();
+    if (s.trim()) p.set("sponsored", s.trim());
+    if (sp.trim()) p.set("sponsor", sp.trim());
+    window.location.search = p.toString();
+  };
+  return (
+    <form onSubmit={go} className="rounded-xl border border-[rgb(var(--border))] p-6">
+      <h2 className="font-serif text-2xl font-semibold">Lav en rapport</h2>
+      <p className="mt-2 text-sm text-[rgb(var(--muted))]">
+        Indtast en sponseret entitet (klub, hold, event) og valgfrit en sponsor.
+      </p>
+      <div className="mt-5 grid gap-4 sm:grid-cols-2">
+        <label className="block">
+          <span className="text-xs uppercase tracking-wider text-[rgb(var(--muted))]">
+            Sponseret
+          </span>
+          <input
+            type="text"
+            value={s}
+            onChange={(e) => setS(e.target.value)}
+            placeholder="fx Aalborg Håndbold"
+            required
+            className="mt-2 w-full rounded-md border border-[rgb(var(--border))] bg-transparent px-4 py-2 focus:border-brand-500 focus:outline-none"
+          />
+        </label>
+        <label className="block">
+          <span className="text-xs uppercase tracking-wider text-[rgb(var(--muted))]">
+            Sponsor (valgfri)
+          </span>
+          <input
+            type="text"
+            value={sp}
+            onChange={(e) => setSp(e.target.value)}
+            placeholder="fx Carlsberg"
+            className="mt-2 w-full rounded-md border border-[rgb(var(--border))] bg-transparent px-4 py-2 focus:border-brand-500 focus:outline-none"
+          />
+        </label>
+      </div>
+      <button
+        type="submit"
+        className="mt-5 rounded-md bg-brand-500 px-5 py-2 text-sm font-medium text-white hover:bg-brand-600 transition"
+      >
+        Generer rapport
+      </button>
+    </form>
+  );
+}
+
 export default function SponsorshipReport() {
   const [{ sponsored, sponsor }, setParams] = useState(readQuery);
   const [data, setData] = useState<Report | null>(null);
@@ -93,17 +146,26 @@ export default function SponsorshipReport() {
   }).format(new Date());
 
   if (!sponsored) {
-    return (
-      <div className="rounded-xl border border-dashed border-[rgb(var(--border))] p-8 text-center">
-        <p className="text-[rgb(var(--muted))]">
-          Tilføj <code className="font-mono">?sponsored=Aalborg+Håndbold&amp;sponsor=Carlsberg</code> til URL'en for at åbne en rapport.
-        </p>
-      </div>
-    );
+    return <InlineReportForm />;
   }
 
   if (loading) return <p className="text-[rgb(var(--muted))]">Bygger rapport...</p>;
-  if (error) return <p className="text-red-500">Fejl: {error}</p>;
+  if (error) {
+    return (
+      <div className="rounded-xl border border-red-500/30 bg-red-500/5 p-6">
+        <p className="font-medium text-red-500">Kunne ikke hente rapport: {error}</p>
+        <p className="mt-2 text-sm text-[rgb(var(--muted))]">
+          OrbisX-API'et er nogle gange flaky. Prøv igen om et øjeblik.
+        </p>
+        <button
+          onClick={() => window.location.reload()}
+          className="mt-4 rounded-md bg-brand-500 px-4 py-2 text-sm font-medium text-white hover:bg-brand-600 transition"
+        >
+          Prøv igen
+        </button>
+      </div>
+    );
+  }
   if (!data) return null;
 
   const maxOutlet = data.top_outlets[0]?.count ?? 0;
