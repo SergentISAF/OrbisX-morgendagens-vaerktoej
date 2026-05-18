@@ -4,6 +4,7 @@ Dette er et tyndt lag på toppen af OrbisXClient. Senere udvider vi med
 shared corpus-lookup (dedup på tværs af kunder) og vores egen ROI-logik.
 """
 
+import asyncio
 from collections import Counter
 
 from fastapi import APIRouter, HTTPException, Query
@@ -28,6 +29,23 @@ class BrandOverview(BaseModel):
     free_pct: float
     top_outlets: list[OutletStat]
     recent_articles: list[Article]
+
+
+class BrandShare(BaseModel):
+    """En kortere variant til sammenligning på tværs af brands."""
+
+    query: str
+    total_matches: int
+    sampled: int
+    unique_outlets: int
+    avg_time_on_frontpage: float
+    top_outlets: list[OutletStat]
+    share_pct: float
+
+
+class CompareResponse(BaseModel):
+    total_combined: int
+    brands: list[BrandShare]
 
 
 @router.get("/sites", response_model=list[Site])
@@ -92,3 +110,56 @@ async def brand_overview(
         ],
         recent_articles=articles[:8],
     )
+
+
+@router.get("/compare/overview", response_model=CompareResponse)
+async def compare_overview(
+    brands: list[str] = Query(..., description="2-5 brands at sammenligne"),
+    sample_size: int = Query(50, ge=10, le=100),
+    country: str | None = Query(None, description="Lande-kode, fx 'dk'"),
+):
+    """Side-by-side sammenligning af op til 5 brands med Share-of-Voice."""
+    brands = [b.strip() for b in brands if b.strip()]
+    if len(brands) < 2:
+        raise HTTPException(400, "Mindst 2 brands skal angives")
+    if len(brands) > 5:
+        raise HTTPException(400, "Maksimalt 5 brands")
+
+    async with OrbisXClient() as client:
+        try:
+            responses = await asyncio.gather(
+                *[
+                    client.search_articles(b, limit=sample_size, page=1, country=country)
+                    for b in brands
+                ]
+            )
+        except Exception as e:
+            raise HTTPException(status_code=502, detail=f"OrbisX fejlede: {e}") from e
+
+    total_combined = sum(r.total_cluster_articles for r in responses)
+    results: list[BrandShare] = []
+    for brand, resp in zip(brands, responses, strict=True):
+        articles = resp.results
+        outlet_counts = Counter(a.site_name for a in articles)
+        times = [a.time_on_frontpage for a in articles if a.time_on_frontpage is not None]
+        avg_time = sum(times) / len(times) if times else 0.0
+        share = (
+            (resp.total_cluster_articles / total_combined * 100)
+            if total_combined > 0
+            else 0.0
+        )
+        results.append(
+            BrandShare(
+                query=brand,
+                total_matches=resp.total_cluster_articles,
+                sampled=len(articles),
+                unique_outlets=len(outlet_counts),
+                avg_time_on_frontpage=round(avg_time, 1),
+                top_outlets=[
+                    OutletStat(site_name=name, count=count)
+                    for name, count in outlet_counts.most_common(5)
+                ],
+                share_pct=round(share, 1),
+            )
+        )
+    return CompareResponse(total_combined=total_combined, brands=results)

@@ -3,6 +3,7 @@ import "../styles/global.css";
 import ThemeToggle from "../components/ThemeToggle";
 import ApiStatus from "../components/ApiStatus";
 import BrandOverview from "../components/BrandOverview";
+import BrandCompare from "../components/BrandCompare";
 ---
 
 <!doctype html>
@@ -60,21 +61,15 @@ import BrandOverview from "../components/BrandOverview";
 
       <BrandOverview client:load />
 
-      <section class="mt-24 grid grid-cols-1 gap-6 sm:grid-cols-2">
+      <BrandCompare client:load />
+
+      <section class="mt-24">
         <article class="rounded-xl border border-dashed border-[rgb(var(--border))] p-6">
           <h2 class="font-serif text-xl font-semibold text-[rgb(var(--muted))]">
             Sponsorat-tracker
           </h2>
           <p class="mt-2 text-sm text-[rgb(var(--muted))]">
             Co-omtaler af sponsor og sponseret. Værdi over tid. Kommer i fase 7.
-          </p>
-        </article>
-        <article class="rounded-xl border border-dashed border-[rgb(var(--border))] p-6">
-          <h2 class="font-serif text-xl font-semibold text-[rgb(var(--muted))]">
-            Konkurrent-sammenligning
-          </h2>
-          <p class="mt-2 text-sm text-[rgb(var(--muted))]">
-            Op til 5 brands side-by-side. Share-of-Voice. Kommer i fase 8.
           </p>
         </article>
       </section>
