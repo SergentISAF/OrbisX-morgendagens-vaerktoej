@@ -2,7 +2,7 @@
 import "../styles/global.css";
 import ThemeToggle from "../components/ThemeToggle";
 import ApiStatus from "../components/ApiStatus";
-import SearchDemo from "../components/SearchDemo";
+import BrandOverview from "../components/BrandOverview";
 ---
 
 <!doctype html>
@@ -37,50 +37,45 @@ import SearchDemo from "../components/SearchDemo";
     <main class="mx-auto max-w-6xl px-6 py-16">
       <div class="max-w-2xl">
         <p class="mb-4 text-sm uppercase tracking-widest text-[rgb(var(--muted))]">
-          Reference Dashboard
+          Brand-monitor (fase 6 lite)
         </p>
         <h1 class="font-serif text-5xl font-semibold leading-tight tracking-tight">
-          Morgendagens værktøj for medieovervågning.
+          Hvor meget bliver dit brand omtalt?
         </h1>
         <p class="mt-6 text-lg text-[rgb(var(--muted))]">
-          Plug-and-play motor. Backend som andre plugger deres frontend ind i. Denne side er
-          showcase, ikke produkt.
+          Indtast et brand. Vi viser hvor mange medier der har skrevet om det, hvilke der
+          dækker mest, og hvor længe historierne ligger på forsiderne.
         </p>
 
-        <div class="mt-10 flex items-center gap-3">
+        <div class="mt-8 flex items-center gap-3">
           <ApiStatus client:load />
           <a
             href="http://localhost:8000/docs"
-            class="rounded-md bg-brand-500 px-4 py-2 text-sm font-medium text-white hover:bg-brand-600 transition"
+            class="text-sm text-[rgb(var(--muted))] underline-offset-4 hover:underline"
           >
-            Åbn API-docs
+            API-docs →
           </a>
         </div>
-
-        <SearchDemo client:load />
       </div>
 
-      <section class="mt-24 grid grid-cols-1 gap-6 sm:grid-cols-3">
-        <article class="rounded-xl border border-[rgb(var(--border))] p-6">
-          <h2 class="font-serif text-xl font-semibold">Brand-monitor</h2>
+      <BrandOverview client:load />
+
+      <section class="mt-24 grid grid-cols-1 gap-6 sm:grid-cols-2">
+        <article class="rounded-xl border border-dashed border-[rgb(var(--border))] p-6">
+          <h2 class="font-serif text-xl font-semibold text-[rgb(var(--muted))]">
+            Sponsorat-tracker
+          </h2>
           <p class="mt-2 text-sm text-[rgb(var(--muted))]">
-            Alle omtaler af ét brand. Timeline, outlets, geografi.
+            Co-omtaler af sponsor og sponseret. Værdi over tid. Kommer i fase 7.
           </p>
-          <p class="mt-4 text-xs uppercase tracking-wider text-[rgb(var(--muted))]">Fase 6</p>
         </article>
-        <article class="rounded-xl border border-[rgb(var(--border))] p-6">
-          <h2 class="font-serif text-xl font-semibold">Sponsorat-tracker</h2>
+        <article class="rounded-xl border border-dashed border-[rgb(var(--border))] p-6">
+          <h2 class="font-serif text-xl font-semibold text-[rgb(var(--muted))]">
+            Konkurrent-sammenligning
+          </h2>
           <p class="mt-2 text-sm text-[rgb(var(--muted))]">
-            Co-omtaler af sponsor og sponseret. Værdi over tid.
+            Op til 5 brands side-by-side. Share-of-Voice. Kommer i fase 8.
           </p>
-          <p class="mt-4 text-xs uppercase tracking-wider text-[rgb(var(--muted))]">Fase 7</p>
-        </article>
-        <article class="rounded-xl border border-[rgb(var(--border))] p-6">
-          <h2 class="font-serif text-xl font-semibold">Konkurrent-sammenligning</h2>
-          <p class="mt-2 text-sm text-[rgb(var(--muted))]">
-            Op til 5 brands side-by-side. Share-of-voice.
-          </p>
-          <p class="mt-4 text-xs uppercase tracking-wider text-[rgb(var(--muted))]">Fase 8</p>
         </article>
       </section>
     </main>
