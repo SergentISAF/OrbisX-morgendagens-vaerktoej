@@ -49,11 +49,15 @@ type Report = {
 };
 
 function readQuery() {
-  if (typeof window === "undefined") return { sponsored: "", sponsor: "" };
+  if (typeof window === "undefined") {
+    return { sponsored: "", sponsor: "", logo: "", color: "" };
+  }
   const p = new URLSearchParams(window.location.search);
   return {
     sponsored: p.get("sponsored") ?? "",
     sponsor: p.get("sponsor") ?? "",
+    logo: p.get("logo") ?? "",
+    color: p.get("color") ?? "",
   };
 }
 
@@ -110,11 +114,25 @@ function InlineReportForm() {
   );
 }
 
+// Konverter hex til rgb-tal-streng "12, 34, 56" til brug i rgba()
+function hexToRgb(hex: string): string | null {
+  const m = hex.match(/^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i);
+  if (!m) return null;
+  return `${parseInt(m[1], 16)}, ${parseInt(m[2], 16)}, ${parseInt(m[3], 16)}`;
+}
+
 export default function SponsorshipReport() {
-  const [{ sponsored, sponsor }, setParams] = useState(readQuery);
+  const [{ sponsored, sponsor, logo, color }, setParams] = useState(readQuery);
   const [data, setData] = useState<Report | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  const accentRgb = hexToRgb(color) ?? "91, 110, 240"; // default brand-500
+  const accentStyle = {
+    "--accent": `rgb(${accentRgb})`,
+    "--accent-soft": `rgba(${accentRgb}, 0.08)`,
+    "--accent-border": `rgba(${accentRgb}, 0.3)`,
+  } as React.CSSProperties;
 
   useEffect(() => {
     setParams(readQuery());
@@ -172,20 +190,31 @@ export default function SponsorshipReport() {
   const freePct = data.sampled > 0 ? Math.round((data.availability.free / data.sampled) * 100) : 0;
 
   return (
-    <div className="print-compact">
+    <div className="print-compact" style={accentStyle}>
       <div className="mb-6 flex items-start justify-between gap-4 no-print">
         <p className="text-sm text-[rgb(var(--muted))]">
           Klar til print. Tryk Cmd+P (Mac) eller Ctrl+P (Windows).
         </p>
         <button
           onClick={() => window.print()}
-          className="print-keep rounded-md bg-brand-500 px-4 py-2 text-sm font-medium text-white hover:bg-brand-600 transition"
+          className="print-keep rounded-md px-4 py-2 text-sm font-medium text-white transition hover:opacity-90"
+          style={{ backgroundColor: "var(--accent)" }}
         >
           Print rapport
         </button>
       </div>
 
       <header className="border-b border-[rgb(var(--border))] pb-6">
+        {logo && (
+          <img
+            src={logo}
+            alt={`${data.sponsored} logo`}
+            className="mb-6 h-16 w-auto object-contain"
+            onError={(e) => {
+              (e.target as HTMLImageElement).style.display = "none";
+            }}
+          />
+        )}
         <p className="text-xs uppercase tracking-widest text-[rgb(var(--muted))]">
           Mediedækningsrapport
         </p>
@@ -202,8 +231,14 @@ export default function SponsorshipReport() {
         </p>
       </header>
 
-      <section className="mt-10 rounded-2xl border border-[rgb(var(--border))] bg-brand-500/5 p-8">
-        <div className="text-xs uppercase tracking-widest text-brand-500">
+      <section
+        className="mt-10 rounded-2xl border p-8"
+        style={{
+          backgroundColor: "var(--accent-soft)",
+          borderColor: "var(--accent-border)",
+        }}
+      >
+        <div className="text-xs uppercase tracking-widest" style={{ color: "var(--accent)" }}>
           Samlet annonceværdi (AVE)
         </div>
         <div className="mt-3 font-serif text-5xl font-semibold leading-none tracking-tight md:text-6xl">
@@ -275,7 +310,10 @@ export default function SponsorshipReport() {
                 <div className="min-w-0">
                   <div className="text-sm font-medium">{o.site_name}</div>
                   <div className="mt-1 h-1.5 overflow-hidden rounded-full bg-[rgb(var(--border))]">
-                    <div className="h-full rounded-full bg-brand-500" style={{ width: `${pct}%` }} />
+                    <div
+                      className="h-full rounded-full"
+                      style={{ width: `${pct}%`, backgroundColor: "var(--accent)" }}
+                    />
                   </div>
                 </div>
                 <div className="font-mono text-sm tabular-nums">{o.count}</div>
@@ -286,8 +324,14 @@ export default function SponsorshipReport() {
       </section>
 
       {data.co_mention && data.sponsor && data.co_mention.intersection_count > 0 && (
-        <section className="mt-12 rounded-2xl border-2 border-brand-500/30 bg-brand-500/5 p-6">
-          <p className="text-xs uppercase tracking-widest text-brand-500">
+        <section
+          className="mt-12 rounded-2xl border-2 p-6"
+          style={{
+            backgroundColor: "var(--accent-soft)",
+            borderColor: "var(--accent-border)",
+          }}
+        >
+          <p className="text-xs uppercase tracking-widest" style={{ color: "var(--accent)" }}>
             Sponsor-co-mention
           </p>
           <h2 className="mt-2 font-serif text-2xl font-semibold tracking-tight">
