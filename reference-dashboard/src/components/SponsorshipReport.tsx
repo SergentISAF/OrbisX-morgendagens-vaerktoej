@@ -285,7 +285,7 @@ export default function SponsorshipReport() {
         </ol>
       </section>
 
-      {data.co_mention && data.sponsor && (
+      {data.co_mention && data.sponsor && data.co_mention.intersection_count > 0 && (
         <section className="mt-12 rounded-2xl border-2 border-brand-500/30 bg-brand-500/5 p-6">
           <p className="text-xs uppercase tracking-widest text-brand-500">
             Sponsor-co-mention
