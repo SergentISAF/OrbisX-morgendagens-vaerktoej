@@ -4,11 +4,16 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from app.core.config import settings
+from app.core.db import init_db
+from app.routes import auth as auth_routes
+from app.routes import entities as entities_routes
 from app.routes import search as search_routes
+from app.routes import sync as sync_routes
 
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
+    await init_db()
     yield
 
 
@@ -19,6 +24,9 @@ app = FastAPI(
     lifespan=lifespan,
 )
 
+app.include_router(auth_routes.router)
+app.include_router(entities_routes.router)
+app.include_router(sync_routes.router)
 app.include_router(search_routes.router)
 
 app.add_middleware(

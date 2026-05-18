@@ -435,18 +435,25 @@ Hver fase = målbar leverance. Tjek af efterhånden.
   - [x] Test-call mod live OrbisX virker (134 medier, 7K+ artikler)
   - [x] Klient i `api/app/sources/orbisx.py`
   - [x] Auto-retry på OrbisX 5xx-fejl (backend er flaky)
-- [ ] **Fase 3 — Auth + Tenants** (sprunget over indtil videre — public API rækker)
-  - [ ] API-key auth
-  - [ ] JWT login til reference-dashboard
-  - [ ] Tenant + User + Role-model
-  - [ ] Rate limiting
-- [ ] **Fase 4 — TrackedEntity CRUD** (sprunget over — ingen persistent state endnu)
-  - [ ] Backend CRUD
-  - [ ] Frontend UI
-- [ ] **Fase 5 — Sync-job** (venter på OrbisX cluster-adgang)
-  - [ ] Opret OrbisX-cluster når entity tilføjes
-  - [ ] Periodisk pull → shared corpus med dedup
-  - [ ] Job-monitoring
+- [x] **Fase 3 — Auth + Tenants** (forenklet, men funktionel)
+  - [x] JWT login til reference-dashboard (bcrypt password-hash, 7-dags expiry)
+  - [x] Tenant + User-model med admin-rolle som default
+  - [x] Signup/login endpoints + /api/auth/me
+  - [x] localStorage-baseret session i frontend
+  - [ ] API-key auth (kommer senere — JWT rækker for dashboard-login)
+  - [ ] Rate limiting + audit-log
+- [x] **Fase 4 — TrackedEntity CRUD**
+  - [x] Backend: GET/POST/DELETE /api/entities (tenant-scoped)
+  - [x] Frontend: Workspace-side med liste, "Tilføj entity"-form, type/farve/sponsor-link
+  - [x] Slet-knap med bekræftelse
+- [x] **Fase 5 — Sync** (manual, ikke scheduled — OrbisX cluster-adgang afventer)
+  - [x] POST /api/entities/{id}/sync trigger: henter via public search-API
+  - [x] Dedup på source_article_id (shared corpus virker)
+  - [x] ArticleMatch-tabel linker tenant + entity + artikel
+  - [x] Strict phrase-filter for fler-ord-entities
+  - [x] "Sync nu"-knap i workspace-UI
+  - [ ] Periodisk auto-sync (cron/APScheduler)
+  - [ ] OrbisX cluster-baseret sync (venter på backend-fix)
 - [x] **Fase 6 — Værktøj #1: Brand-monitor**
   - [x] `api/`: `/api/brand/overview` endpoint med stats + top outlets + recent articles
   - [x] `reference-dashboard/`: BrandOverview-komponent med stat-kort + outlet-bars + artikel-liste

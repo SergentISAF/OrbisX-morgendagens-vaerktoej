@@ -32,7 +32,13 @@ import ReportForm from "../components/ReportForm";
           <span class="font-serif text-2xl font-semibold tracking-tight">OrbisX</span>
           <span class="text-xs text-[rgb(var(--muted))]">arbejdsnavn</span>
         </div>
-        <ThemeToggle client:load />
+        <div class="flex items-center gap-3">
+          <a href="/workspace" class="text-sm hover:underline">Workspace</a>
+          <a href="/login" class="rounded-md border border-[rgb(var(--border))] px-3 py-1.5 text-sm hover:bg-[rgb(var(--border))]/30 transition">
+            Log ind
+          </a>
+          <ThemeToggle client:load />
+        </div>
       </div>
     </header>
 
