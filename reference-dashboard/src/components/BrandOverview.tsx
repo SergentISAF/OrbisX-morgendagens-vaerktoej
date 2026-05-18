@@ -49,6 +49,24 @@ function StatCard({
   );
 }
 
+function AvailabilityBadge({ availability }: { availability: string | null }) {
+  if (availability === "free") {
+    return (
+      <span className="inline-flex items-center rounded-md bg-green-500/15 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider text-green-700 dark:text-green-400">
+        Gratis
+      </span>
+    );
+  }
+  if (availability === "paid") {
+    return (
+      <span className="inline-flex items-center rounded-md bg-blue-500/15 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider text-blue-700 dark:text-blue-400">
+        Betalingsvæg
+      </span>
+    );
+  }
+  return null;
+}
+
 function OutletBar({
   outlet,
   max,
@@ -180,8 +198,11 @@ export default function BrandOverview() {
                       rel="noopener noreferrer"
                       className="block hover:opacity-70 transition"
                     >
-                      <div className="text-sm font-medium leading-snug">
-                        {a.article_title ?? "(uden titel)"}
+                      <div className="flex items-start gap-2">
+                        <AvailabilityBadge availability={a.availability} />
+                        <div className="text-sm font-medium leading-snug">
+                          {a.article_title ?? "(uden titel)"}
+                        </div>
                       </div>
                       <div className="mt-1 flex items-center gap-2 text-xs text-[rgb(var(--muted))]">
                         <span className="font-medium">{a.site_name}</span>
