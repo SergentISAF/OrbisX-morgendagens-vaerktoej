@@ -196,13 +196,21 @@ export default function SponsorshipReport() {
         <p className="text-sm text-[rgb(var(--muted))]">
           Klar til print. Tryk Cmd+P (Mac) eller Ctrl+P (Windows).
         </p>
-        <button
-          onClick={() => window.print()}
-          className="print-keep rounded-md px-4 py-2 text-sm font-medium text-white transition hover:opacity-90"
-          style={{ backgroundColor: "var(--accent)" }}
-        >
-          Print rapport
-        </button>
+        <div className="flex items-center gap-2">
+          <a
+            href={`${API_URL}/api/sponsorship/report.csv?sponsored=${encodeURIComponent(sponsored)}&sample_size=200`}
+            className="rounded-md border border-[rgb(var(--border))] px-4 py-2 text-sm font-medium hover:bg-[rgb(var(--border))]/30 transition"
+          >
+            Download CSV
+          </a>
+          <button
+            onClick={() => window.print()}
+            className="print-keep rounded-md px-4 py-2 text-sm font-medium text-white transition hover:opacity-90"
+            style={{ backgroundColor: "var(--accent)" }}
+          >
+            Print rapport
+          </button>
+        </div>
       </div>
 
       <header className="border-b border-[rgb(var(--border))] pb-6">

@@ -5,13 +5,16 @@ shared corpus-lookup (dedup på tværs af kunder) og vores egen ROI-logik.
 """
 
 import asyncio
+import csv
+import io
 import re
 from collections import Counter
 
 from fastapi import APIRouter, HTTPException, Query
+from fastapi.responses import StreamingResponse
 from pydantic import BaseModel
 
-from app.services.ave import ave_summary
+from app.services.ave import article_ave, ave_summary, tier_for_outlet
 from app.sources.orbisx import Article, OrbisXClient, SearchResponse, Site
 
 router = APIRouter(prefix="/api", tags=["search"])
@@ -353,4 +356,76 @@ async def sponsorship_report(
         ave_extrapolated_dkk=extrapolated,
         co_mention=co_mention,
         co_mention_note=co_mention_note,
+    )
+
+
+@router.get("/sponsorship/report.csv")
+async def sponsorship_report_csv(
+    sponsored: str = Query(..., min_length=1),
+    sample_size: int = Query(200, ge=50, le=500),
+    country: str | None = Query(None),
+):
+    """CSV-eksport af artikel-data til rapporten. Bruges af kunde-analytikere."""
+    pages_to_fetch = (sample_size + 99) // 100
+
+    async with OrbisXClient() as client:
+        results = await asyncio.gather(
+            *[
+                client.search_articles(sponsored, limit=100, page=p, country=country)
+                for p in range(1, pages_to_fetch + 1)
+            ],
+            return_exceptions=True,
+        )
+
+    responses = [r for r in results if not isinstance(r, Exception)]
+    if not responses:
+        first_err = next((r for r in results if isinstance(r, Exception)), None)
+        raise HTTPException(status_code=502, detail=f"OrbisX fejlede: {first_err}")
+
+    articles: list[Article] = []
+    for r in responses:
+        articles.extend(r.results)
+    articles = articles[:sample_size]
+
+    # Anvend strict phrase-filter for fler-ord-søgninger
+    if len(sponsored.strip().split()) >= 2:
+        articles = [
+            a for a in articles
+            if sponsored.lower() in ((a.article_title or "") + " " + (a.frontpage_title or "")).lower()
+        ] or articles
+
+    # Skriv CSV
+    buf = io.StringIO()
+    buf.write("﻿")  # BOM så Excel læser æøå korrekt
+    writer = csv.writer(buf, delimiter=";")
+    writer.writerow([
+        "article_id",
+        "site_name",
+        "outlet_tier",
+        "article_title",
+        "article_url",
+        "article_created",
+        "time_on_frontpage_hours",
+        "availability",
+        "ave_dkk",
+    ])
+    for a in articles:
+        writer.writerow([
+            a.article_id,
+            a.site_name,
+            tier_for_outlet(a.site_name),
+            a.article_title or "",
+            a.article_url,
+            a.article_created or "",
+            a.time_on_frontpage or 0,
+            a.availability or "",
+            article_ave(a),
+        ])
+
+    safe_name = re.sub(r"[^a-zA-Z0-9_-]+", "_", sponsored).strip("_") or "rapport"
+    filename = f"orbisx-{safe_name}.csv"
+    return StreamingResponse(
+        iter([buf.getvalue()]),
+        media_type="text/csv; charset=utf-8",
+        headers={"Content-Disposition": f'attachment; filename="{filename}"'},
     )
