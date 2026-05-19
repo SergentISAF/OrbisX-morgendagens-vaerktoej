@@ -31,6 +31,12 @@ class Tenant(Base):
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
     name: Mapped[str] = mapped_column(String(200), nullable=False)
     slug: Mapped[str] = mapped_column(String(100), unique=True, nullable=False)
+    # Forhold-typen: 'sponsor' = vi sponsorerer andre; 'sponseret' = vi modtager sponsorater;
+    # 'mixed' = begge dele (bureau-mode, senere). Default 'sponsor' fordi det er hyppigste.
+    relationship_type: Mapped[str] = mapped_column(String(20), default="sponsor")
+    # Det egne brand-navn — det vi auto-tagger entities med uden at brugeren skal indtaste.
+    own_brand_name: Mapped[Optional[str]] = mapped_column(String(200), nullable=True)
+    own_brand_search_text: Mapped[Optional[str]] = mapped_column(String(500), nullable=True)
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), server_default=func.now()
     )

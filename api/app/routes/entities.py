@@ -40,7 +40,12 @@ class EntityOut(BaseModel):
 
 @router.get("", response_model=list[EntityOut])
 async def list_entities(current: CurrentUser, db: AsyncSession = Depends(get_db)):
-    q = select(TrackedEntity).where(TrackedEntity.tenant_id == current.tenant_id)
+    # Sortér efter eksponering (last_match_count) faldende, så top-værdi for kunden står øverst
+    q = (
+        select(TrackedEntity)
+        .where(TrackedEntity.tenant_id == current.tenant_id)
+        .order_by(TrackedEntity.last_match_count.desc(), TrackedEntity.created_at.desc())
+    )
     return [EntityOut.model_validate(e, from_attributes=True) for e in (await db.execute(q)).scalars()]
 
 

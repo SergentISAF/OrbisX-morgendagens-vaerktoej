@@ -26,9 +26,23 @@ async def get_db() -> AsyncIterator[AsyncSession]:
 
 
 async def init_db() -> None:
-    """Opret tabeller hvis de mangler. Bruges som hurtig erstatning for migrations."""
-    # Importer modeller så de er registreret på Base.metadata
+    """Opret tabeller hvis de mangler + kør lette idempotente migrationer.
+
+    Vi bruger Postgres' ADD COLUMN IF NOT EXISTS for at undgå at miste data
+    når vi tilføjer felter. Når skemaet bliver komplekst skifter vi til Alembic.
+    """
+    from sqlalchemy import text
+
     from app import models  # noqa: F401
 
     async with engine.begin() as conn:
         await conn.run_sync(Base.metadata.create_all)
+
+        # Tilføj nye kolonner på eksisterende tenant-tabel (idempotent)
+        migrations = [
+            "ALTER TABLE tenants ADD COLUMN IF NOT EXISTS relationship_type VARCHAR(20) NOT NULL DEFAULT 'sponsor'",
+            "ALTER TABLE tenants ADD COLUMN IF NOT EXISTS own_brand_name VARCHAR(200)",
+            "ALTER TABLE tenants ADD COLUMN IF NOT EXISTS own_brand_search_text VARCHAR(500)",
+        ]
+        for sql in migrations:
+            await conn.execute(text(sql))
