@@ -36,15 +36,16 @@ class EntityOut(BaseModel):
     created_at: datetime
     last_synced_at: datetime | None
     last_match_count: int
+    last_ave_dkk: int
 
 
 @router.get("", response_model=list[EntityOut])
 async def list_entities(current: CurrentUser, db: AsyncSession = Depends(get_db)):
-    # Sortér efter eksponering (last_match_count) faldende, så top-værdi for kunden står øverst
+    # Sortér efter AVE (annonceværdi) faldende — det er ranking efter reel eksponering
     q = (
         select(TrackedEntity)
         .where(TrackedEntity.tenant_id == current.tenant_id)
-        .order_by(TrackedEntity.last_match_count.desc(), TrackedEntity.created_at.desc())
+        .order_by(TrackedEntity.last_ave_dkk.desc(), TrackedEntity.last_match_count.desc())
     )
     return [EntityOut.model_validate(e, from_attributes=True) for e in (await db.execute(q)).scalars()]
 

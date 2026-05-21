@@ -38,11 +38,12 @@ async def init_db() -> None:
     async with engine.begin() as conn:
         await conn.run_sync(Base.metadata.create_all)
 
-        # Tilføj nye kolonner på eksisterende tenant-tabel (idempotent)
+        # Idempotente migrationer (PostgreSQL ADD COLUMN IF NOT EXISTS)
         migrations = [
             "ALTER TABLE tenants ADD COLUMN IF NOT EXISTS relationship_type VARCHAR(20) NOT NULL DEFAULT 'sponsor'",
             "ALTER TABLE tenants ADD COLUMN IF NOT EXISTS own_brand_name VARCHAR(200)",
             "ALTER TABLE tenants ADD COLUMN IF NOT EXISTS own_brand_search_text VARCHAR(500)",
+            "ALTER TABLE tracked_entities ADD COLUMN IF NOT EXISTS last_ave_dkk BIGINT NOT NULL DEFAULT 0",
         ]
         for sql in migrations:
             await conn.execute(text(sql))

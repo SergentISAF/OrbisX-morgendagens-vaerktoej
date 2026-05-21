@@ -16,6 +16,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.core.db import get_db
 from app.core.deps import CurrentUser
 from app.models import Article, ArticleMatch, TrackedEntity
+from app.services.ave import total_ave
 from app.sources.orbisx import OrbisXClient
 
 router = APIRouter(prefix="/api/entities", tags=["sync"])
@@ -111,6 +112,12 @@ async def sync_entity(
 
     e.last_synced_at = datetime.now(timezone.utc)
     e.last_match_count = len(article_id_by_source)
+    # Ekstrapoler AVE: hvis vi har totalen fra OrbisX, brug den; ellers sample
+    if fetched:
+        sample_total = total_ave(fetched)
+        e.last_ave_dkk = sample_total
+    else:
+        e.last_ave_dkk = 0
     await db.commit()
     await db.refresh(e)
 

@@ -83,6 +83,7 @@ class TrackedEntity(Base):
         DateTime(timezone=True), nullable=True
     )
     last_match_count: Mapped[int] = mapped_column(Integer, default=0)
+    last_ave_dkk: Mapped[int] = mapped_column(BigInteger, default=0)
 
     tenant: Mapped[Tenant] = relationship(back_populates="entities")
 
