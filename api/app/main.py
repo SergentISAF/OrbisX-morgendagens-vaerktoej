@@ -8,6 +8,7 @@ from app.core.db import init_db
 from app.routes import auth as auth_routes
 from app.routes import entities as entities_routes
 from app.routes import search as search_routes
+from app.routes import share as share_routes
 from app.routes import sync as sync_routes
 
 
@@ -28,6 +29,7 @@ app.include_router(auth_routes.router)
 app.include_router(entities_routes.router)
 app.include_router(sync_routes.router)
 app.include_router(search_routes.router)
+app.include_router(share_routes.router)
 
 app.add_middleware(
     CORSMiddleware,

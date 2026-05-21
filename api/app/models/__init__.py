@@ -124,3 +124,23 @@ class ArticleMatch(Base):
     matched_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), server_default=func.now()
     )
+
+
+class ShareLink(Base):
+    """Delbart token-baseret link til en entity's rapport. Læseadgang uden login."""
+
+    __tablename__ = "share_links"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    token: Mapped[str] = mapped_column(String(64), unique=True, nullable=False, index=True)
+    tenant_id: Mapped[int] = mapped_column(ForeignKey("tenants.id"), nullable=False)
+    entity_id: Mapped[int] = mapped_column(
+        ForeignKey("tracked_entities.id", ondelete="CASCADE"), nullable=False
+    )
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), server_default=func.now()
+    )
+    expires_at: Mapped[Optional[datetime]] = mapped_column(
+        DateTime(timezone=True), nullable=True
+    )
+    view_count: Mapped[int] = mapped_column(Integer, default=0)
