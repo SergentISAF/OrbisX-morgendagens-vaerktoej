@@ -44,6 +44,59 @@ class HealthResponse(BaseModel):
     version: str | None = None
 
 
+class DailyVolume(BaseModel):
+    date: str
+    articles: int
+    minutes_on_frontpage: int = 0
+
+
+class MetadataResponse(BaseModel):
+    model_config = ConfigDict(extra="allow")
+
+    total_articles: int = 0
+    total_minutes_on_frontpage: int = 0
+    daily: list[DailyVolume] = Field(default_factory=list)
+
+
+class TrendingStory(BaseModel):
+    model_config = ConfigDict(extra="allow")
+
+    thread_id: int | None = None
+    title: str | None = None
+    url: str | None = None
+    site_count: int | None = None
+    article_count: int | None = None
+    expected_views: int | None = None
+    latest_created: str | None = None
+
+
+class TrendingResponse(BaseModel):
+    stories: list[TrendingStory] = Field(default_factory=list)
+
+
+class ClusterSummary(BaseModel):
+    model_config = ConfigDict(extra="allow")
+
+    user_cluster_id: int
+    cluster_id: int | None = None
+    title: str | None = None
+    cluster_type: str | None = None
+
+
+class ClustersResponse(BaseModel):
+    user_id: str
+    results: list[ClusterSummary] = Field(default_factory=list)
+
+
+class ClusterArticlesResponse(BaseModel):
+    model_config = ConfigDict(extra="allow")
+
+    user_id: str
+    user_cluster_id: int
+    results: list[dict] = Field(default_factory=list)
+    metadata: dict = Field(default_factory=dict)
+
+
 class OrbisXClient:
     """Asynk klient mod OrbisX v2 API."""
 
@@ -137,3 +190,50 @@ class OrbisXClient:
         )
         r.raise_for_status()
         return SearchResponse.model_validate(r.json())
+
+    # ---- Platform: volume + trending (Mikkel-fix 2026-05-27) ----
+
+    async def metadata(
+        self,
+        keywords: list[str],
+        *,
+        country: str = "dk",
+        timerange: int | None = 30,
+        start_date: str | None = None,
+        end_date: str | None = None,
+    ) -> MetadataResponse:
+        """Daily volume for nøgleord. Brug timerange (dage) ELLER start/end_date."""
+        body: dict = {"country": country, "keywords": keywords}
+        if start_date and end_date:
+            body["start_date"] = start_date
+            body["end_date"] = end_date
+        elif timerange is not None:
+            body["timerange"] = timerange
+        r = await self._client.post("/platform/metadata", json=body)
+        r.raise_for_status()
+        return MetadataResponse.model_validate(r.json())
+
+    async def trending(
+        self, *, country: str = "dk", timerange: int = 2, limit: int = 10
+    ) -> TrendingResponse:
+        """Trending stories på tværs af landet."""
+        body = {"country": country, "timerange": timerange, "limit": limit}
+        r = await self._client.post("/platform/trending", json=body)
+        r.raise_for_status()
+        return TrendingResponse.model_validate(r.json())
+
+    # ---- User clusters (Mikkel-fix 2026-05-27) ----
+
+    async def user_clusters(self, user_id: int) -> ClustersResponse:
+        r = await self._client.get(f"/users/{user_id}/clusters")
+        r.raise_for_status()
+        return ClustersResponse.model_validate(r.json())
+
+    async def cluster_articles(
+        self, user_id: int, cluster_id: int
+    ) -> ClusterArticlesResponse:
+        r = await self._client.get(
+            f"/users/{user_id}/clusters/{cluster_id}/articles"
+        )
+        r.raise_for_status()
+        return ClusterArticlesResponse.model_validate(r.json())

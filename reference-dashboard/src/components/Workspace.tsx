@@ -1,5 +1,7 @@
 import { useEffect, useState } from "react";
 import { API_URL, authHeaders, clearAuth, getAuth } from "../lib/auth";
+import TrendingWidget from "./TrendingWidget";
+import VolumeSparkline from "./VolumeSparkline";
 
 type Entity = {
   id: number;
@@ -285,6 +287,14 @@ export default function Workspace() {
                     )}
                   </div>
 
+                  <div className="mt-4">
+                    <VolumeSparkline
+                      entityId={e.id}
+                      color={e.color}
+                      days={30}
+                    />
+                  </div>
+
                   <div className="mt-4 flex gap-2">
                     <button
                       onClick={() => sync(e.id)}
@@ -306,6 +316,10 @@ export default function Workspace() {
             })}
           </ul>
         )}
+      </section>
+
+      <section className="mt-12">
+        <TrendingWidget limit={8} days={2} />
       </section>
     </div>
   );
